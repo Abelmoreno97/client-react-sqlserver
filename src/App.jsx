@@ -3,6 +3,7 @@ import axios from "axios";
 import "./App.css";
 
 function App() {
+  // ESTADOS
   const [count, setCount] = useState(0);
   const [products, setProducts] = useState([]);
   const [productId, setProductId] = useState([]);
@@ -20,6 +21,7 @@ function App() {
     quantity: "",
   });
 
+  // GET ALL PRODUCTS (USE EFFECT)
   useEffect(() => {
     const getProducts = async () => {
       try {
@@ -30,59 +32,11 @@ function App() {
         console.error("Error al obtener los datos:", error);
       }
     };
-
-    // Llamada a getProducts al montar el componente o al abrir por primera vez
     getProducts();
   }, []);
 
-  const deleteProductById = async () => {
-    try {
-      await axios.delete(`http://localhost:4000/products/${deleteId}`);
-      alert("Product deleted");
-      setDeleteId(""); // Restablecer el valor del campo de entrada
-      window.location.reload()
-    } catch (error) {
-      console.error("Error al eliminar el producto:", error);
-    }
-  };
-  
-  const deleteProducts = async () => {
-    try {
-      await axios.delete(`http://localhost:4000/totalproducts`);
-      alert("All product deleted");
-    } catch (error) {
-      console.error("Error al eliminar el producto:", error);
-    }
-  };
-
-  const getProductById = async () => {
-    try {
-      const respuesta = await fetch(
-        `http://localhost:4000/products/${idInput}`
-      );
-      const product = await respuesta.json();
-      setProductId(product[0]);
-    } catch (error) {
-      console.error("Error al obtener los datos:", error);
-    }
-  };
-
-  const updateProductById = async () => {
-    try {
-      await axios.put(`http://localhost:4000/products/${iduform}`, uform);
-      alert("Product updated");
-      setUform({
-        name: "",
-        description: "",
-        quantity: "",
-      });
-    } catch (error) {
-      console.error("Error al actualizar el producto:", error);
-    }
-  };
-
+  // COUNT ALL PRODUCTS (USE EFFECT)
   useEffect(() => {
-    // Código que se ejecutará después de que el componente se monte o se actualice
     (async () => {
       try {
         const respuesta = await fetch("http://localhost:4000/totalproducts");
@@ -94,7 +48,6 @@ function App() {
     })();
 
     return () => {
-      // Código que se ejecutará antes de que el componente se desmonte
       (async () => {
         try {
           const respuesta = await fetch("http://localhost:4000/totalproducts");
@@ -107,40 +60,25 @@ function App() {
     };
   }, []);
 
-  const changeHandler = (event) => {
-    const property = event.target.name;
-    const value = event.target.value;
-
-    // setErrors(validate({ ...form, [property]: value }));
-    // validate({ ...form, [property]: value });
-    setForm({ ...form, [property]: value });
+  // GET PRODUCTS BY ID
+  const getProductById = async () => {
+    try {
+      const respuesta = await fetch(
+        `http://localhost:4000/products/${idInput}`
+      );
+      const product = await respuesta.json();
+      if (product[0] == null) {
+        alert(`product id ${idInput} not found`)
+      } else {
+        setProductId(product[0]);
+      }
+      
+    } catch (error) {
+      console.error("Error al obtener los datos:", error);
+    }
   };
 
-  const changeIdHandler = (event) => {
-    const value = [event.target.value];
-
-    setIdInput(value);
-  };
-
-  const changeuHandler = (event) => {
-    const property = event.target.name;
-    const value = event.target.value;
-
-    // setErrors(validate({ ...form, [property]: value }));
-    // validate({ ...form, [property]: value });
-    setUform({ ...uform, [property]: value });
-  };
-
-  const changeIduHandler = (event) => {
-    const value = [event.target.value];
-
-    setIduform(value);
-  };
-
-  const handleChangeDeleteId = (event) => {
-    setDeleteId(event.target.value);
-  };
-
+  // CREATE NEW PRODUCT
   const submitHandler = (event) => {
     event.preventDefault();
     // agregar peticion al back para enviar formulario
@@ -151,7 +89,92 @@ function App() {
       description: "",
       quantity: "",
     });
-    window.location.reload()
+    window.location.reload();
+  };
+
+  // UPDATE PRODUCT BY ID
+  const updateProductById = async () => {
+    event.preventDefault()
+    try {
+      await axios.put(`http://localhost:4000/products/${iduform}`, uform);
+     const idarray = products.map((pr)=>(pr.id))
+     const idprod = parseInt(iduform[0]) 
+     if (idarray.includes(idprod)) {
+      alert("Product updated");
+      setUform({
+        name: "",
+        description: "",
+        quantity: "",
+      });
+      window.location.reload();
+     } else {
+      alert(`product id ${iduform} not found`)
+     }
+      
+    } catch (error) {
+      console.error("Error al actualizar el producto:", error);
+    }
+  };
+
+  // DELETE PRODUCTS
+
+  const deleteProductById = async () => {
+    try {
+      const idarray = products.map((pr)=>(pr.id))
+      const idprod = parseInt(deleteId) 
+      if (idarray.includes(idprod)) {
+        await axios.delete(`http://localhost:4000/products/${deleteId}`);
+        alert("Product deleted");
+      setDeleteId(""); // Restablecer el valor del campo de entrada
+      window.location.reload();
+      } else {
+        alert(`product id ${deleteId} not found`)
+      } 
+    } catch (error) {
+      console.error("Error al eliminar el producto:", error);
+    }
+  };
+
+  const deleteProducts = async () => {
+    try {
+      await axios.delete(`http://localhost:4000/totalproducts`);
+      alert("All product deleted");
+      window.location.reload()
+    } catch (error) {
+      console.error("Error al eliminar el producto:", error);
+    }
+  };
+
+// CHANGE HANDLER CREATE FORM
+  const changeHandler = (event) => {
+    const property = event.target.name;
+    const value = event.target.value;
+
+    setForm({ ...form, [property]: value });
+  };
+// CHANGE HANDLER GET BY ID
+  const changeIdHandler = (event) => {
+    const value = [event.target.value];
+
+    setIdInput(value);
+  };
+// CHANGE HANDLER UPDATE FORM
+  const changeuHandler = (event) => {
+    const property = event.target.name;
+    const value = event.target.value;
+
+    
+    setUform({ ...uform, [property]: value });
+  };
+// CHANGE HANDLER ID UPDATE 
+  const changeIduHandler = (event) => {
+    const value = [event.target.value];
+
+    setIduform(value);
+  };
+// CHANGE HANDLER ID DELETE
+  const handleChangeDeleteId = (event) => {
+    setDeleteId(event.target.value);
   };
 
   return (
@@ -179,6 +202,7 @@ function App() {
         <div className="divInferior">
           {/* div product by id */}
           <div>
+            <h2>Get product by id</h2>
             <div>
               <input
                 type="text"
@@ -186,7 +210,9 @@ function App() {
                 value={idInput}
                 onChange={(event) => changeIdHandler(event)}
               ></input>
-              <button onClick={getProductById}>getById</button>
+            </div>
+            <div>
+            <button onClick={getProductById}>getById</button>
             </div>
             <div className="prod">
               <p>Id: {productId.id}</p>
@@ -195,10 +221,11 @@ function App() {
               <p>Quantity: {productId.Quantity}</p>
             </div>
           </div>
-          {/* div post porduct */}
+          {/* div create porduct */}
           <div>
-            <form onSubmit={submitHandler}>
-              <div>
+          <h2>Create new product</h2>
+            <form  onSubmit={submitHandler}>
+              <div className="form">
                 <label>name</label>
                 <input
                   type="text"
@@ -207,7 +234,7 @@ function App() {
                   name="name"
                 />
               </div>
-              <div>
+              <div className="form">
                 <label>description</label>
                 <input
                   type="text"
@@ -216,7 +243,7 @@ function App() {
                   name="description"
                 />
               </div>
-              <div>
+              <div className="form">
                 <label>quantity</label>
                 <input
                   type="number"
@@ -230,8 +257,9 @@ function App() {
           </div>
           {/* div update product */}
           <div>
+          <h2>Update product</h2>
             <form onSubmit={updateProductById}>
-              <div>
+              <div className="form">
                 <label>Id</label>
                 <input
                   type="text"
@@ -240,7 +268,7 @@ function App() {
                   name="id"
                 />
               </div>
-              <div>
+              <div className="form">
                 <label>Name</label>
                 <input
                   type="text"
@@ -249,7 +277,7 @@ function App() {
                   name="name"
                 />
               </div>
-              <div>
+              <div className="form">
                 <label>Description</label>
                 <input
                   type="text"
@@ -258,7 +286,7 @@ function App() {
                   name="description"
                 />
               </div>
-              <div>
+              <div className="form">
                 <label>Quantity</label>
                 <input
                   type="number"
@@ -271,16 +299,24 @@ function App() {
             </form>
           </div>
           <div>
-          <input
-  type="text"
-  value={deleteId}
-  onChange={handleChangeDeleteId}
-  name="deleteId"
-/>
-<button type="button" onClick={deleteProductById}>
-  Delete
-</button>
-<button type="button" onClick={deleteProducts}>Delete All</button>
+          <h2>Delete product</h2>
+            <div>
+            <input
+              type="text"
+              value={deleteId}
+              onChange={handleChangeDeleteId}
+              name="deleteId"
+            />
+            </div>
+            <div>
+            <button type="button" onClick={deleteProductById}>
+              Delete by id
+            </button>
+            <button type="button" onClick={deleteProducts}>
+              DELETE ALL
+            </button>
+            </div>
+            
           </div>
         </div>
       </div>
